@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: skill-platform
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:skillplatform}
+    username: ${DB_USER:skilluser}
+    password: ${DB_PASSWORD:skillpass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  cache:
+    type: simple
+
+# Skills crawler config
+skill:
+  crawler:
+    scan-path: ${SKILL_SCAN_PATH:/skills}
+    scan-paths: ${SKILL_SCAN_PATHS:}
+    run-on-startup: ${SKILL_CRAWL_ON_STARTUP:true}
+    cron: ${SKILL_CRAWLER_CRON:0 0 */6 * * *}
+    marketplace-url: ${MARKETPLACE_URL:}
+
+app:
+  demo-data:
+    enabled: ${DEMO_DATA_ENABLED:false}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.skillplatform: INFO
+    org.springframework.web: WARN

@@ -1,0 +1,82 @@
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: skill-platform-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillplatform
+      POSTGRES_USER: skilluser
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-skillpass2026}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skilluser -d skillplatform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skill-net
+
+  # ── Spring Boot Backend ────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skill-platform-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: skillplatform
+      DB_USER: skilluser
+      DB_PASSWORD: ${DB_PASSWORD:-skillpass2026}
+      SKILL_SCAN_PATH: "/skills"
+      SKILL_SCAN_PATHS: "${SKILL_SCAN_PATHS:-}"
+      SKILL_CRAWL_ON_STARTUP: "${SKILL_CRAWL_ON_STARTUP:-true}"
+      SKILL_CRAWLER_CRON: "${SKILL_CRAWLER_CRON:-0 0 */6 * * *}"
+      DEMO_DATA_ENABLED: "${DEMO_DATA_ENABLED:-false}"
+      MARKETPLACE_URL: "${MARKETPLACE_URL:-}"
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      # Mount your local skills directory here
+      - ${SKILLS_DIR:-./skills-data}:/skills:ro
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/skills/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - skill-net
+
+  # ── React Frontend (Nginx) ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skill-platform-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${PORT:-80}:80"
+    networks:
+      - skill-net
+
+volumes:
+  postgres_data:
+    name: skill-platform-pgdata
+
+networks:
+  skill-net:
+    name: skill-platform-network
+    driver: bridge
