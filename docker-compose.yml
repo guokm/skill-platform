@@ -36,6 +36,20 @@ services:
       DB_NAME: skillplatform
       DB_USER: skilluser
       DB_PASSWORD: ${DB_PASSWORD:-skillpass2026}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-SkillAtlas-Super-Secret-Key-2026-Change-This-In-Production!}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-72}
+      # Linux.do OAuth2
+      LINUX_DO_CLIENT_ID: ${LINUX_DO_CLIENT_ID:-}
+      LINUX_DO_CLIENT_SECRET: ${LINUX_DO_CLIENT_SECRET:-}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://localhost/api/auth/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      # Admin
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-skillatlas}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Sk!llAtl@s#2026$}
+      ADMIN_MIN_TRUST_LEVEL: ${ADMIN_MIN_TRUST_LEVEL:-2}
+      ADMIN_EXTRA_IDS: ${ADMIN_EXTRA_IDS:-}
+      # Crawler
       SKILL_SCAN_PATH: "/skills"
       SKILL_SCAN_PATHS: "${SKILL_SCAN_PATHS:-}"
       SKILL_CRAWL_ON_STARTUP: "${SKILL_CRAWL_ON_STARTUP:-true}"

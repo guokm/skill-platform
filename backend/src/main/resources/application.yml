@@ -36,6 +36,30 @@ app:
   demo-data:
     enabled: ${DEMO_DATA_ENABLED:false}
 
+  # JWT
+  jwt:
+    secret: ${JWT_SECRET:SkillAtlas-Super-Secret-Key-2026-Change-In-Production-Must-Be-32chars}
+    expiration-hours: ${JWT_EXPIRATION_HOURS:168}   # 7 days
+
+  # Linux.do OAuth2
+  oauth2:
+    linux-do:
+      client-id: ${LINUX_DO_CLIENT_ID:7C2cUmHTgMEb028o0S1ia1bocG7chm7V}
+      client-secret: ${LINUX_DO_CLIENT_SECRET:wU5UFgt9YPnw4IaHtorNcBS48aiOhdCJ}
+      authorization-endpoint: https://connect.linux.do/oauth2/authorize
+      token-endpoint: https://connect.linux.do/oauth2/token
+      user-endpoint: https://connect.linux.do/api/user
+      redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8080/api/auth/callback}
+      frontend-url: ${FRONTEND_URL:http://localhost}
+
+  # Admin config
+  admin:
+    min-trust-level: ${ADMIN_MIN_TRUST_LEVEL:2}
+    extra-admin-ids: ${ADMIN_EXTRA_IDS:}    # comma-separated linux.do user IDs
+    # 固定后台账密（用于直接登录管理页，无需 Linux.do）
+    username: ${ADMIN_USERNAME:skillatlas}
+    password: ${ADMIN_PASSWORD:Sk!llAtl@s#2026$}
+
 springdoc:
   api-docs:
     path: /api-docs

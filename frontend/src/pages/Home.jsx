@@ -26,8 +26,9 @@ export default function Home() {
 
   useEffect(() => {
     async function loadHomepage() {
-      try {
-        const [groupedRes, trendingRes, downloadsRes, latestRes, featuredRes, statsRes] = await Promise.all([
+      // 用 allSettled 保证单个接口失败不影响整页渲染
+      const [groupedRes, trendingRes, downloadsRes, latestRes, featuredRes, statsRes] =
+        await Promise.allSettled([
           categoriesApi.grouped(),
           skillsApi.trending(),
           skillsApi.mostDownloaded(),
@@ -36,17 +37,14 @@ export default function Home() {
           skillsApi.stats(),
         ])
 
-        setCategoryGroups(groupedRes.data)
-        setTrending(trendingRes.data.slice(0, 5))
-        setDownloads(downloadsRes.data.slice(0, 5))
-        setLatest(latestRes.data.slice(0, 4))
-        setFeatured(featuredRes.data.slice(0, 3))
-        setStats(statsRes.data)
-      } catch (error) {
-        console.error('Failed to load homepage data', error)
-      } finally {
-        setLoading(false)
-      }
+      if (groupedRes.status === 'fulfilled') setCategoryGroups(groupedRes.value.data)
+      if (trendingRes.status === 'fulfilled') setTrending(trendingRes.value.data.slice(0, 5))
+      if (downloadsRes.status === 'fulfilled') setDownloads(downloadsRes.value.data.slice(0, 5))
+      if (latestRes.status === 'fulfilled') setLatest(latestRes.value.data.slice(0, 4))
+      if (featuredRes.status === 'fulfilled') setFeatured(featuredRes.value.data.slice(0, 3))
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data)
+
+      setLoading(false)
     }
 
     loadHomepage()

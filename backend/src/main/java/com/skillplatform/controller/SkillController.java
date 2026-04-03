@@ -92,6 +92,15 @@ public class SkillController {
         return ResponseEntity.ok(skillService.getLatestSkills());
     }
 
+    @GetMapping("/{slug}/related")
+    @Operation(summary = "Get related skills by same category")
+    public ResponseEntity<List<SkillDTO>> getRelated(
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "4") int limit
+    ) {
+        return ResponseEntity.ok(skillService.getRelatedSkills(slug, limit));
+    }
+
     @GetMapping("/stats")
     @Operation(summary = "Get platform statistics")
     public ResponseEntity<Map<String, Object>> getStats() {

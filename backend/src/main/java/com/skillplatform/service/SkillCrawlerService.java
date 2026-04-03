@@ -178,6 +178,7 @@ public class SkillCrawlerService {
         skill.setSourcePath(skillFile.toAbsolutePath().toString());
         skill.setIconUrl(firstNonBlank(stringValue(frontmatter, "iconUrl"), stringValue(frontmatter, "icon_url")));
         skill.setIconEmoji(firstNonBlank(stringValue(frontmatter, "icon"), stringValue(frontmatter, "emoji"), inferEmoji(category.getSlug(), name)));
+        skill.setOrigin(firstNonBlank(stringValue(frontmatter, "origin"), stringValue(frontmatter, "source")));
         skill.setTags(tags);
         skill.setFeatured(booleanValue(frontmatter, "featured", false));
         skill.setVerified(booleanValue(frontmatter, "verified", true));

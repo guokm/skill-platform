@@ -133,6 +133,19 @@ public class SkillService {
                 .toList();
     }
 
+    public List<SkillDTO> getRelatedSkills(String slug, int limit) {
+        Skill skill = getSkillEntityBySlug(slug);
+        if (skill.getCategory() == null) {
+            return List.of();
+        }
+        int safeLimit = Math.max(1, Math.min(limit, 12));
+        return skillRepository.findRelatedByCategory(
+                skill.getCategory().getId(),
+                slug,
+                PageRequest.of(0, safeLimit)
+        ).stream().map(SkillDTO::from).toList();
+    }
+
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalSkills", skillRepository.count());

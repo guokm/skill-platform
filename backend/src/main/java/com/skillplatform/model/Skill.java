@@ -66,6 +66,9 @@ public class Skill {
     @Column(name = "icon_emoji", length = 10)
     private String iconEmoji;
 
+    @Column(name = "origin", length = 100)
+    private String origin;  // e.g. ECC, community, etc.
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "skill_tags", joinColumns = @JoinColumn(name = "skill_id"))
     @Column(name = "tag", length = 50)

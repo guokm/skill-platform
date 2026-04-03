@@ -59,4 +59,19 @@ public interface SkillRepository extends JpaRepository<Skill, Long>, JpaSpecific
     long sumDownloadCount();
 
     boolean existsBySlug(String slug);
+
+    long countByFeaturedTrue();
+
+    long countByVerifiedTrue();
+
+    @Query("""
+        SELECT s FROM Skill s
+        WHERE s.category.id = :categoryId
+          AND s.slug <> :excludeSlug
+        ORDER BY s.clickCount DESC
+        """)
+    List<Skill> findRelatedByCategory(
+            @Param("categoryId") Long categoryId,
+            @Param("excludeSlug") String excludeSlug,
+            Pageable pageable);
 }

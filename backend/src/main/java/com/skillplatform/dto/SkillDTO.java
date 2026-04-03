@@ -22,6 +22,7 @@ public class SkillDTO {
     private String sourceUrl;
     private String iconUrl;
     private String iconEmoji;
+    private String origin;
     private List<String> tags;
     private Long clickCount;
     private Long downloadCount;
@@ -48,6 +49,7 @@ public class SkillDTO {
         dto.setSourceUrl(s.getSourceUrl());
         dto.setIconUrl(s.getIconUrl());
         dto.setIconEmoji(s.getIconEmoji());
+        dto.setOrigin(s.getOrigin());
         dto.setTags(s.getTags());
         dto.setClickCount(s.getClickCount());
         dto.setDownloadCount(s.getDownloadCount());
