@@ -23,9 +23,11 @@ public class SkillDTO {
     private String iconUrl;
     private String iconEmoji;
     private String origin;
+    private String submitterUsername;
     private List<String> tags;
     private Long clickCount;
     private Long downloadCount;
+    private Integer pricePoints;
     private Boolean featured;
     private Boolean verified;
     private LocalDateTime createdAt;
@@ -50,9 +52,11 @@ public class SkillDTO {
         dto.setIconUrl(s.getIconUrl());
         dto.setIconEmoji(s.getIconEmoji());
         dto.setOrigin(s.getOrigin());
+        dto.setSubmitterUsername(s.getSubmitterUsername());
         dto.setTags(s.getTags());
         dto.setClickCount(s.getClickCount());
         dto.setDownloadCount(s.getDownloadCount());
+        dto.setPricePoints(s.getPricePoints() == null ? 1 : Math.max(0, s.getPricePoints()));
         dto.setFeatured(s.getFeatured());
         dto.setVerified(s.getVerified());
         dto.setCreatedAt(s.getCreatedAt());

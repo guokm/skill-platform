@@ -33,7 +33,7 @@ export const skillsApi = {
   getBySlug: (slug) => API.get(`/skills/${slug}`),
   recordClick: (id) => API.post(`/skills/${id}/click`),
   recordDownload: (id) => API.post(`/skills/${id}/download`),
-  // 下载整包（需要登录，直接用 URL 跳转时 token 通过 query 传递）
+  downloadPackage: (id) => API.get(`/skills/${id}/download-package`, { responseType: 'blob' }),
   downloadPackageUrl: (id) => `/api/skills/${id}/download-package`,
   trending: () => API.get('/skills/trending'),
   mostDownloaded: () => API.get('/skills/most-downloaded'),
@@ -60,6 +60,53 @@ export const authApi = {
   logout: () => API.post('/auth/logout'),
 }
 
+// ── Points & Level ────────────────────────────────────────────────────────
+export const pointsApi = {
+  summary:        () => API.get('/users/me/points'),
+  checkIn:        () => API.post('/users/me/check-in'),
+  level:          () => API.get('/users/me/level'),
+  purchases:      () => API.get('/users/me/purchases'),
+  purchaseStatus: (skillId) => API.get(`/users/me/skills/${skillId}/purchase-status`),
+  uploadSkill:    (formData, onProgress) => API.post('/users/me/submissions/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (e) => onProgress && onProgress(Math.round((e.loaded * 100) / e.total)),
+  }),
+}
+
+// ── Favorites ─────────────────────────────────────────────────────────────
+export const favoritesApi = {
+  myFavorites: () => API.get('/users/me/favorites'),
+  toggle: (id) => API.post(`/skills/${id}/favorite`),
+  status: (id) => API.get(`/skills/${id}/favorite`),
+}
+
+// ── Public Profile ────────────────────────────────────────────────────────
+export const profileApi = {
+  getPublicProfile: (username) => API.get(`/users/${encodeURIComponent(username)}/profile`),
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────
+export const usersApi = {
+  myPoints: () => API.get('/users/me/points'),
+  myLevel: () => API.get('/users/me/level'),
+  myPurchases: () => API.get('/users/me/purchases'),
+  mySubmittedSkills: () => API.get('/users/me/submitted-skills'),
+  checkIn: () => API.post('/users/me/check-in'),
+  uploadSkill: (formData) => API.post('/users/me/submissions/upload', formData),
+  purchaseStatus: (id) => API.get(`/users/me/skills/${id}/purchase-status`),
+}
+
+// ── Ratings ───────────────────────────────────────────────────────────────
+export const ratingsApi = {
+  get: (id) => API.get(`/skills/${id}/rating`),
+  rate: (id, rating) => API.post(`/skills/${id}/rate`, { rating }),
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────
+export const leaderboardApi = {
+  get: () => API.get('/leaderboard'),
+}
+
 // ── Admin ─────────────────────────────────────────────────────────────────
 export const adminApi = {
   crawl: () => API.post('/admin/crawl'),
@@ -71,6 +118,10 @@ export const adminApi = {
   toggleVerified: (id) => API.post(`/admin/skills/${id}/verify`),
   listUsers: () => API.get('/admin/users'),
   toggleAdmin: (id) => API.patch(`/admin/users/${id}/admin`),
+  adjustUserPoints: (id, data) => API.patch(`/admin/users/${id}/points`, data),
+  listSubmissions: () => API.get('/admin/submissions'),
+  approveSubmission: (id) => API.post(`/admin/submissions/${id}/approve`),
+  rejectSubmission: (id, data) => API.post(`/admin/submissions/${id}/reject`, data),
 }
 
 export default API

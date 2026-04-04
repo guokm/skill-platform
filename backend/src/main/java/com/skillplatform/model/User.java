@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "users")
@@ -48,6 +49,25 @@ public class User {
     @Column(name = "active")
     @Builder.Default
     private Boolean active = true;
+
+    @Column(name = "points_balance")
+    @Builder.Default
+    private Integer pointsBalance = 0;
+
+    @Column(name = "total_points_spent")
+    @Builder.Default
+    private Integer totalPointsSpent = 0;
+
+    @Column(name = "last_check_in_date")
+    private LocalDate lastCheckInDate;
+
+    @Column(name = "check_in_streak_days")
+    @Builder.Default
+    private Integer checkInStreakDays = 0;
+
+    @Column(name = "total_check_in_count")
+    @Builder.Default
+    private Integer totalCheckInCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

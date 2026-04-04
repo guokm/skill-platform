@@ -46,6 +46,7 @@ public class SkillCrawlerService {
 
     private final SkillRepository skillRepository;
     private final CategoryService categoryService;
+    private final PointService pointService;
 
     @Value("${skill.crawler.scan-path:/skills}")
     private String scanPath;
@@ -179,7 +180,20 @@ public class SkillCrawlerService {
         skill.setIconUrl(firstNonBlank(stringValue(frontmatter, "iconUrl"), stringValue(frontmatter, "icon_url")));
         skill.setIconEmoji(firstNonBlank(stringValue(frontmatter, "icon"), stringValue(frontmatter, "emoji"), inferEmoji(category.getSlug(), name)));
         skill.setOrigin(firstNonBlank(stringValue(frontmatter, "origin"), stringValue(frontmatter, "source")));
+        skill.setSubmitterLinuxDoId(firstNonBlank(
+                stringValue(frontmatter, "submitterLinuxDoId"),
+                stringValue(frontmatter, "submitterId"),
+                stringValue(frontmatter, "ownerLinuxDoId"),
+                stringValue(frontmatter, "linuxDoId"),
+                stringValue(frontmatter, "linux_do_id")
+        ));
+        skill.setSubmitterUsername(firstNonBlank(
+                stringValue(frontmatter, "submitterUsername"),
+                stringValue(frontmatter, "submitter"),
+                stringValue(frontmatter, "uploader")
+        ));
         skill.setTags(tags);
+        skill.setPricePoints(resolvePricePoints(frontmatter));
         skill.setFeatured(booleanValue(frontmatter, "featured", false));
         skill.setVerified(booleanValue(frontmatter, "verified", true));
 
@@ -189,6 +203,7 @@ public class SkillCrawlerService {
         }
 
         skillRepository.save(skill);
+        pointService.rewardSkillSubmissionIfEligible(skill);
         return isNew;
     }
 
@@ -313,6 +328,30 @@ public class SkillCrawlerService {
             return boolValue;
         }
         return Boolean.parseBoolean(String.valueOf(value));
+    }
+
+    private int resolvePricePoints(Map<String, Object> frontmatter) {
+        return Stream.of("pricePoints", "price_points", "price", "points", "credits")
+                .map(key -> integerValue(frontmatter, key))
+                .filter(Objects::nonNull)
+                .map(pointService::normalizePrice)
+                .findFirst()
+                .orElse(1);
+    }
+
+    private Integer integerValue(Map<String, Object> frontmatter, String key) {
+        Object value = nestedValue(frontmatter, key);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(value).trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private String extractSummary(String markdown) {

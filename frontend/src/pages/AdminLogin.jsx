@@ -41,21 +41,21 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4">
+    <div className="flex min-h-[80vh] items-center justify-center px-4 bg-transparent">
       <div className="w-full max-w-sm space-y-5">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#101a26,#1d6f70)] text-3xl shadow-xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-atlas-teal/25 text-3xl shadow-xl">
             🧭
           </div>
-          <h1 className="display-title text-3xl text-atlas-ink">管理后台</h1>
-          <p className="mt-1 text-sm text-slate-500">Skill Atlas Admin</p>
+          <h1 className="display-title text-3xl text-atlas-strong">管理后台</h1>
+          <p className="mt-1 text-sm text-atlas-muted">Skill Atlas Admin</p>
         </div>
 
         {/* Linux.do OAuth */}
         <button
           onClick={handleLinuxDoLogin}
-          className="w-full atlas-button-solid flex items-center justify-center gap-3 py-3.5"
+          className="w-full atlas-button-solid flex items-center justify-center gap-3 py-3.5 font-medium"
         >
           <span className="text-lg">🐧</span>
           <span>用 Linux.do 账号登录</span>
@@ -63,17 +63,17 @@ export default function AdminLogin() {
 
         {/* Divider */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-[rgba(214,198,178,0.9)]" />
-          <span className="text-xs uppercase tracking-[0.2em] text-slate-400">或使用固定账密</span>
-          <div className="flex-1 h-px bg-[rgba(214,198,178,0.9)]" />
+          <div className="flex-1 h-px bg-atlas-line" />
+          <span className="text-xs uppercase tracking-[0.2em] text-atlas-muted">或使用固定账密</span>
+          <div className="flex-1 h-px bg-atlas-line" />
         </div>
 
         {/* Fixed credentials form */}
-        <form onSubmit={handleSubmit} className="atlas-panel space-y-4 px-6 py-6">
+        <form onSubmit={handleSubmit} className="atlas-panel px-6 py-6 space-y-4">
           <div>
             <label className="section-kicker mb-2 block">用户名</label>
             <div className="relative">
-              <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
               <input
                 type="text"
                 value={username}
@@ -88,7 +88,7 @@ export default function AdminLogin() {
           <div>
             <label className="section-kicker mb-2 block">密码</label>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
               <input
                 type={showPw ? 'text' : 'password'}
                 value={password}
@@ -100,7 +100,7 @@ export default function AdminLogin() {
               <button
                 type="button"
                 onClick={() => setShowPw(v => !v)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-atlas-ink"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-atlas-muted hover:text-atlas-teal transition"
               >
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -108,7 +108,7 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-600">
+            <p className="bg-red-950/80 border border-red-500/30 text-red-400 rounded-xl px-4 py-2.5 text-sm font-medium">
               {error}
             </p>
           )}
@@ -116,7 +116,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full atlas-button-solid flex items-center justify-center gap-2 py-3 disabled:opacity-60"
+            className="w-full atlas-button-solid flex items-center justify-center gap-2 py-3 disabled:opacity-60 font-medium"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
             {loading ? '登录中…' : '登录'}

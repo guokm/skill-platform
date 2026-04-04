@@ -4,13 +4,21 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+// @Index is already part of jakarta.persistence — imported via the wildcard above
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "skills")
+@Table(name = "skills", indexes = {
+        @Index(name = "idx_skill_click_count",    columnList = "click_count"),
+        @Index(name = "idx_skill_download_count", columnList = "download_count"),
+        @Index(name = "idx_skill_category_id",    columnList = "category_id"),
+        @Index(name = "idx_skill_created_at",     columnList = "created_at"),
+        @Index(name = "idx_skill_featured",       columnList = "featured"),
+        @Index(name = "idx_skill_verified",       columnList = "verified"),
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -69,6 +77,19 @@ public class Skill {
     @Column(name = "origin", length = 100)
     private String origin;  // e.g. ECC, community, etc.
 
+    @Column(name = "submitter_linux_do_id", length = 100)
+    private String submitterLinuxDoId;
+
+    @Column(name = "submitter_username", length = 100)
+    private String submitterUsername;
+
+    @Column(name = "submission_reward_granted")
+    @Builder.Default
+    private Boolean submissionRewardGranted = false;
+
+    @Column(name = "submission_reward_granted_at")
+    private LocalDateTime submissionRewardGrantedAt;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "skill_tags", joinColumns = @JoinColumn(name = "skill_id"))
     @Column(name = "tag", length = 50)
@@ -82,6 +103,10 @@ public class Skill {
     @Column(name = "download_count")
     @Builder.Default
     private Long downloadCount = 0L;
+
+    @Column(name = "price_points")
+    @Builder.Default
+    private Integer pricePoints = 1;
 
     @Column(name = "featured")
     @Builder.Default

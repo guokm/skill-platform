@@ -1,6 +1,7 @@
 package com.skillplatform.service;
 
 import com.skillplatform.model.User;
+import com.skillplatform.repository.PointTransactionRepository;
 import com.skillplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PointTransactionRepository pointTransactionRepository;
+    private final PointService pointService;
 
     @Value("${app.oauth2.linux-do.client-id}")
     private String clientId;
@@ -46,6 +49,9 @@ public class AuthService {
 
     @Value("${app.admin.extra-admin-ids:}")
     private String extraAdminIds;
+
+    @Value("${app.points.initial-balance:20}")
+    private int initialBalance;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -136,6 +142,7 @@ public class AuthService {
         boolean isAdmin = trustLevel >= minTrustLevel || isExtraAdmin(linuxDoId);
 
         User user = userRepository.findByLinuxDoId(linuxDoId).orElseGet(User::new);
+        boolean needsInitialPoints = user.getId() == null || user.getPointsBalance() == null;
         user.setLinuxDoId(linuxDoId);
         user.setUsername(username);
         user.setName(name);
@@ -145,8 +152,20 @@ public class AuthService {
         user.setIsAdmin(isAdmin);
         user.setActive(active && !silenced);
         user.setLastLoginAt(LocalDateTime.now());
+        if (needsInitialPoints) {
+            user.setPointsBalance(Math.max(0, initialBalance));
+            if (user.getTotalPointsSpent() == null) {
+                user.setTotalPointsSpent(0);
+            }
+        } else if (user.getTotalPointsSpent() == null) {
+            user.setTotalPointsSpent(0);
+        }
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        if (needsInitialPoints && pointTransactionRepository.findTop10ByUserIdOrderByCreatedAtDesc(savedUser.getId()).isEmpty()) {
+            pointService.grantInitialPoints(savedUser);
+        }
+        return savedUser;
     }
 
     private boolean isExtraAdmin(String linuxDoId) {

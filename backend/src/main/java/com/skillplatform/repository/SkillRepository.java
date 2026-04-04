@@ -19,6 +19,8 @@ public interface SkillRepository extends JpaRepository<Skill, Long>, JpaSpecific
 
     Optional<Skill> findBySlug(String slug);
 
+    Optional<Skill> findBySourcePath(String sourcePath);
+
     Page<Skill> findByCategoryId(Long categoryId, Pageable pageable);
 
     Page<Skill> findByCategorySlug(String categorySlug, Pageable pageable);
@@ -63,6 +65,19 @@ public interface SkillRepository extends JpaRepository<Skill, Long>, JpaSpecific
     long countByFeaturedTrue();
 
     long countByVerifiedTrue();
+
+    long countBySubmitterLinuxDoId(String submitterLinuxDoId);
+
+    java.util.List<Skill> findBySubmitterLinuxDoIdOrderByCreatedAtDesc(String submitterLinuxDoId);
+
+    @Query("""
+        SELECT s FROM Skill s
+        WHERE s.verified = false
+          AND s.submitterLinuxDoId IS NOT NULL
+          AND s.submitterLinuxDoId <> ''
+        ORDER BY s.createdAt ASC
+        """)
+    java.util.List<Skill> findPendingCommunitySubmissions();
 
     @Query("""
         SELECT s FROM Skill s

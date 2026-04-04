@@ -10,6 +10,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,8 +61,8 @@ public class SkillController {
 
     @GetMapping({"/{id}/download-file", "/{id}/download-package"})
     @Operation(summary = "Download the whole skill package and record a download")
-    public ResponseEntity<ByteArrayResource> downloadSkill(@PathVariable Long id) {
-        SkillService.DownloadPayload payload = skillService.prepareDownload(id);
+    public ResponseEntity<ByteArrayResource> downloadSkill(@PathVariable Long id, Authentication authentication) {
+        SkillService.DownloadPayload payload = skillService.prepareDownload(id, extractUserId(authentication));
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + payload.filename() + "\"")
@@ -105,5 +106,12 @@ public class SkillController {
     @Operation(summary = "Get platform statistics")
     public ResponseEntity<Map<String, Object>> getStats() {
         return ResponseEntity.ok(skillService.getStats());
+    }
+
+    private Long extractUserId(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Not authenticated");
+        }
+        return Long.parseLong(authentication.getName());
     }
 }

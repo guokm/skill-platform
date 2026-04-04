@@ -38,13 +38,23 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/skills/*/click").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                // 公开用户主页（无需登录）
+                .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
+                // 排行榜（公开）
+                .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
                 // Auth endpoints（含固定账密后台登录）
                 .requestMatchers("/api/auth/**").permitAll()
                 // Swagger
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+                // 评分查询：公开（未登录时不返回 myRating）
+                .requestMatchers(HttpMethod.GET, "/api/skills/*/rating").permitAll()
                 // 下载需要登录
                 .requestMatchers("/api/skills/*/download-package", "/api/skills/*/download-file").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/skills/*/download").authenticated()
+                // 收藏 & 评分 & 我的收藏 — 需要登录
+                .requestMatchers("/api/skills/*/favorite").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/skills/*/rate").authenticated()
+                .requestMatchers("/api/users/me/**").authenticated()
                 // Admin 操作需要 ADMIN 角色
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // 其他 POST/PUT/DELETE 需要认证

@@ -21,7 +21,12 @@ spring:
         format_sql: true
 
   cache:
-    type: simple
+    type: caffeine
+
+  servlet:
+    multipart:
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:100MB}
+      max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:120MB}
 
 # Skills crawler config
 skill:
@@ -31,6 +36,9 @@ skill:
     run-on-startup: ${SKILL_CRAWL_ON_STARTUP:true}
     cron: ${SKILL_CRAWLER_CRON:0 0 */6 * * *}
     marketplace-url: ${MARKETPLACE_URL:}
+  upload:
+    base-path: ${SKILL_UPLOAD_PATH:/skills/user-submissions}
+    auto-crawl: ${SKILL_UPLOAD_AUTO_CRAWL:true}
 
 app:
   demo-data:
@@ -59,6 +67,16 @@ app:
     # 固定后台账密（用于直接登录管理页，无需 Linux.do）
     username: ${ADMIN_USERNAME:skillatlas}
     password: ${ADMIN_PASSWORD:Sk!llAtl@s#2026$}
+
+  points:
+    initial-balance: ${DEFAULT_USER_POINTS:100}
+    daily-check-in-reward: ${DAILY_CHECK_IN_POINTS:5}
+    skill-submission-reward: ${SKILL_SUBMISSION_POINTS:200}
+    upload-unlock-rank: ${UPLOAD_UNLOCK_RANK:3}
+    author-share-ratio: ${AUTHOR_SHARE_RATIO:0.7}
+    streak-7day-bonus: ${STREAK_7DAY_BONUS:30}
+    streak-30day-bonus: ${STREAK_30DAY_BONUS:200}
+    rating-reward: ${RATING_REWARD:2}
 
 springdoc:
   api-docs:

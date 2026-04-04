@@ -25,6 +25,17 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_REQUEST, "请求格式错误：" + ex.getMessage());
     }
 
+    /** 业务异常 */
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of(
+                "error", ex.getMessage(),
+                "code", ex.getCode(),
+                "status", ex.getStatus().value(),
+                "timestamp", LocalDateTime.now().toString()
+        ));
+    }
+
     /** 路径参数类型不匹配 */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {

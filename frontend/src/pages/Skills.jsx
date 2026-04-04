@@ -11,6 +11,8 @@ const SORT_OPTIONS = [
   { value: 'updated', label: '最近更新', icon: RefreshCcw },
 ]
 
+const DEBOUNCE_DELAY = 350
+
 export default function Skills() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -76,6 +78,16 @@ export default function Skills() {
     loadSkills()
   }, [categorySlug, keyword, legacyCategoryId, page, sortBy])
 
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== keyword) {
+        updateParam('keyword', searchInput.trim() || null)
+      }
+    }, DEBOUNCE_DELAY)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams)
     if (value) {
@@ -104,14 +116,14 @@ export default function Skills() {
   return (
     <div className="px-3 pb-12 pt-4 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="atlas-panel relative overflow-hidden px-6 py-7 sm:px-8">
+        <section className="atlas-panel-dark surface-noise relative overflow-hidden px-6 py-7 sm:px-8">
           <div className="grid gap-6 lg:grid-cols-[1fr,0.78fr] lg:items-end">
             <div>
               <p className="section-kicker">Skills directory</p>
-              <h1 className="display-title mt-2 text-4xl text-atlas-ink sm:text-5xl">
+              <h1 className="display-title mt-2 text-4xl text-atlas-strong sm:text-5xl">
                 {currentCategory ? currentCategory.nameZh : '全部 Skills'}
               </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-atlas-muted">
                 {currentCategory?.description ?? '按行业、岗位和热门趋势浏览已爬取的 SKILL.md。'}
               </p>
             </div>
@@ -127,7 +139,7 @@ export default function Skills() {
         <div className="grid gap-6 xl:grid-cols-[300px,1fr]">
           <aside className="space-y-4">
             <div className="atlas-panel px-5 py-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-atlas-ink">
+              <div className="flex items-center gap-2 text-sm font-semibold text-atlas-strong">
                 <Filter className="h-4 w-4" />
                 行业筛选
               </div>
@@ -136,14 +148,14 @@ export default function Skills() {
                 <button
                   type="button"
                   onClick={() => updateParam('category', null)}
-                  className={`atlas-button-outline justify-start ${!categorySlug && !legacyCategoryId ? 'border-[var(--atlas-teal)] text-[var(--atlas-teal)]' : ''}`}
+                  className={`atlas-button-outline justify-start transition ${!categorySlug && !legacyCategoryId ? 'bg-atlas-teal/10 border-atlas-teal/40 text-atlas-teal' : ''}`}
                 >
                   全部行业
                 </button>
 
                 {categoryGroups.map((group) => (
                   <div key={group.key} className="space-y-2">
-                    <p className="section-kicker">{group.nameZh}</p>
+                    <p className="text-xs uppercase tracking-widest font-mono text-atlas-muted">{group.nameZh}</p>
                     <div className="grid gap-2">
                       {group.categories.map((category) => {
                         const isActive = category.slug === categorySlug || `${category.id}` === legacyCategoryId
@@ -154,12 +166,12 @@ export default function Skills() {
                             onClick={() => updateParam('category', category.slug)}
                             className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
                               isActive
-                                ? 'border-[var(--atlas-teal)] bg-teal-50 text-[var(--atlas-teal)]'
-                                : 'border-[rgba(214,198,178,0.9)] bg-white/70 text-slate-600 hover:bg-white'
+                                ? 'bg-atlas-teal/10 border-atlas-teal/40 text-atlas-teal'
+                                : 'bg-atlas-s2 border-atlas-line text-atlas-ink hover:border-atlas-teal/40'
                             }`}
                           >
                             <span>{category.icon} {category.nameZh}</span>
-                            <span className="text-xs uppercase tracking-[0.16em]">{category.skillCount}</span>
+                            <span className="font-mono text-xs">{category.skillCount}</span>
                           </button>
                         )
                       })}
@@ -171,10 +183,10 @@ export default function Skills() {
           </aside>
 
           <main className="space-y-5">
-            <div className="atlas-panel px-5 py-5">
+            <div className="atlas-panel px-5 py-4">
               <form onSubmit={submitSearch} className="flex flex-col gap-3 lg:flex-row">
                 <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-atlas-muted" />
                   <input
                     type="search"
                     value={searchInput}
@@ -199,8 +211,8 @@ export default function Skills() {
                       onClick={() => updateParam('sortBy', option.value)}
                       className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
                         active
-                          ? 'bg-atlas-ink text-white'
-                          : 'border border-[rgba(214,198,178,0.9)] bg-white/70 text-slate-600 hover:bg-white'
+                          ? 'bg-atlas-teal text-white shadow-glow-sm'
+                          : 'bg-atlas-s2 border-atlas-line text-atlas-muted hover:text-atlas-teal hover:border-atlas-teal/40'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -219,9 +231,9 @@ export default function Skills() {
               </div>
             ) : skills.length === 0 ? (
               <div className="atlas-panel px-8 py-12 text-center">
-                <Filter className="mx-auto h-10 w-10 text-slate-300" />
-                <h3 className="mt-4 text-xl font-semibold text-atlas-ink">没有找到匹配的 Skills</h3>
-                <p className="mt-2 text-sm text-slate-500">试试换一个行业，或者减少搜索关键词。</p>
+                <Filter className="mx-auto h-10 w-10 text-atlas-muted" />
+                <h3 className="mt-4 text-xl font-semibold text-atlas-strong">没有找到匹配的 Skills</h3>
+                <p className="mt-2 text-sm text-atlas-muted">试试换一个行业，或者减少搜索关键词。</p>
                 <button type="button" onClick={() => navigate('/skills')} className="atlas-button-outline mt-5">
                   重置筛选
                 </button>
@@ -254,8 +266,8 @@ export default function Skills() {
                       onClick={() => setPage(pageNumber)}
                       className={`h-10 min-w-10 rounded-full px-3 text-sm font-medium ${
                         pageNumber === page
-                          ? 'bg-atlas-ink text-white'
-                          : 'border border-[rgba(214,198,178,0.9)] bg-white/70 text-slate-600'
+                          ? 'bg-atlas-teal text-white'
+                          : 'bg-atlas-s2 border-atlas-line text-atlas-muted'
                       }`}
                     >
                       {pageNumber + 1}
@@ -282,9 +294,9 @@ export default function Skills() {
 
 function MetaStat({ label, value }) {
   return (
-    <div className="rounded-[22px] border border-[rgba(214,198,178,0.85)] bg-white/72 px-4 py-4">
+    <div className="rounded-[22px] border border-atlas-line bg-atlas-s3 px-4 py-4">
       <p className="section-kicker">{label}</p>
-      <p className="mt-3 text-lg font-semibold text-atlas-ink">{value}</p>
+      <p className="mt-3 font-mono text-2xl text-atlas-teal">{value}</p>
     </div>
   )
 }

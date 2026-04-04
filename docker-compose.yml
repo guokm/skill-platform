@@ -52,6 +52,15 @@ services:
       # Crawler
       SKILL_SCAN_PATH: "/skills"
       SKILL_SCAN_PATHS: "${SKILL_SCAN_PATHS:-}"
+      SKILL_UPLOAD_PATH: "${SKILL_UPLOAD_PATH:-/skills/user-submissions}"
+      SKILL_UPLOAD_AUTO_CRAWL: "${SKILL_UPLOAD_AUTO_CRAWL:-true}"
+      DEFAULT_USER_POINTS: "${DEFAULT_USER_POINTS:-100}"
+      DAILY_CHECK_IN_POINTS: "${DAILY_CHECK_IN_POINTS:-5}"
+      SKILL_SUBMISSION_POINTS: "${SKILL_SUBMISSION_POINTS:-200}"
+      AUTHOR_SHARE_RATIO: "${AUTHOR_SHARE_RATIO:-0.7}"
+      STREAK_7DAY_BONUS: "${STREAK_7DAY_BONUS:-30}"
+      STREAK_30DAY_BONUS: "${STREAK_30DAY_BONUS:-200}"
+      RATING_REWARD: "${RATING_REWARD:-2}"
       SKILL_CRAWL_ON_STARTUP: "${SKILL_CRAWL_ON_STARTUP:-true}"
       SKILL_CRAWLER_CRON: "${SKILL_CRAWLER_CRON:-0 0 */6 * * *}"
       DEMO_DATA_ENABLED: "${DEMO_DATA_ENABLED:-false}"
@@ -59,7 +68,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
     volumes:
       # Mount your local skills directory here
-      - ${SKILLS_DIR:-./skills-data}:/skills:ro
+      - ${SKILLS_DIR:-./skills-data}:/skills
     ports:
       - "8080:8080"
     healthcheck:

@@ -1,5 +1,6 @@
 package com.skillplatform.service;
 
+import com.skillplatform.config.CacheConfig;
 import com.skillplatform.dto.PagedResponse;
 import com.skillplatform.dto.SkillDTO;
 import com.skillplatform.model.Skill;
@@ -7,6 +8,9 @@ import com.skillplatform.repository.SkillRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,6 +42,7 @@ public class SkillService {
 
     private final SkillRepository skillRepository;
     private final CategoryService categoryService;
+    private final PointService pointService;
 
     public PagedResponse<SkillDTO> getSkills(
             Long categoryId,
@@ -69,20 +74,33 @@ public class SkillService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.CACHE_TRENDING,  allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_STATS,     allEntries = true),
+    })
     public void recordClick(Long skillId) {
         ensureSkillExists(skillId);
         skillRepository.incrementClickCount(skillId);
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.CACHE_MOST_DOWNLOADED, allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_STATS,           allEntries = true),
+    })
     public void recordDownload(Long skillId) {
         ensureSkillExists(skillId);
         skillRepository.incrementDownloadCount(skillId);
     }
 
     @Transactional
-    public DownloadPayload prepareDownload(Long skillId) {
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.CACHE_MOST_DOWNLOADED, allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_STATS, allEntries = true),
+    })
+    public DownloadPayload prepareDownload(Long skillId, Long userId) {
         Skill skill = getSkillEntity(skillId);
+        pointService.ensureDownloadAccess(userId, skill);
         recordDownload(skillId);
 
         if (skill.getSourcePath() != null && !skill.getSourcePath().isBlank()) {
@@ -105,6 +123,7 @@ public class SkillService {
         );
     }
 
+    @Cacheable(CacheConfig.CACHE_TRENDING)
     public List<SkillDTO> getTrendingSkills() {
         return skillRepository.findTop10ByOrderByClickCountDesc()
                 .stream()
@@ -112,6 +131,7 @@ public class SkillService {
                 .toList();
     }
 
+    @Cacheable(CacheConfig.CACHE_MOST_DOWNLOADED)
     public List<SkillDTO> getMostDownloaded() {
         return skillRepository.findTop10ByOrderByDownloadCountDesc()
                 .stream()
@@ -119,6 +139,7 @@ public class SkillService {
                 .toList();
     }
 
+    @Cacheable(CacheConfig.CACHE_FEATURED)
     public List<SkillDTO> getFeaturedSkills() {
         return skillRepository.findTop6ByFeaturedTrueOrderByClickCountDesc()
                 .stream()
@@ -126,6 +147,7 @@ public class SkillService {
                 .toList();
     }
 
+    @Cacheable(CacheConfig.CACHE_LATEST)
     public List<SkillDTO> getLatestSkills() {
         return skillRepository.findTop8ByOrderByCreatedAtDesc()
                 .stream()
@@ -146,6 +168,7 @@ public class SkillService {
         ).stream().map(SkillDTO::from).toList();
     }
 
+    @Cacheable(CacheConfig.CACHE_STATS)
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalSkills", skillRepository.count());
@@ -154,6 +177,19 @@ public class SkillService {
         stats.put("totalDownloads", skillRepository.sumDownloadCount());
         stats.put("timestamp", LocalDateTime.now());
         return stats;
+    }
+
+    /** 管理员操作后清除所有列表缓存，保证首页数据一致 */
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.CACHE_TRENDING,        allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_MOST_DOWNLOADED, allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_FEATURED,        allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_LATEST,          allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_STATS,           allEntries = true),
+        @CacheEvict(value = CacheConfig.CACHE_RATING,          allEntries = true),
+    })
+    public void evictAllCaches() {
+        log.info("All skill caches evicted");
     }
 
     private Skill getSkillEntity(Long skillId) {
@@ -185,6 +221,7 @@ public class SkillService {
         if (skill.getAuthor() != null && !skill.getAuthor().isBlank()) {
             builder.append("author: ").append(skill.getAuthor()).append('\n');
         }
+        builder.append("pricePoints: ").append(pointService.normalizePrice(skill.getPricePoints())).append('\n');
         builder.append("---\n\n");
         if (skill.getReadmeContent() != null && !skill.getReadmeContent().isBlank()) {
             builder.append(skill.getReadmeContent());

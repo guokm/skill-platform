@@ -5,6 +5,7 @@ import com.skillplatform.model.User;
 import com.skillplatform.repository.UserRepository;
 import com.skillplatform.service.AuthService;
 import com.skillplatform.service.JwtService;
+import com.skillplatform.service.UserLevelService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +32,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserLevelService userLevelService;
 
     @Value("${app.oauth2.linux-do.frontend-url:http://localhost}")
     private String frontendUrl;
@@ -98,10 +100,13 @@ public class AuthController {
             adminDto.setName("系统管理员");
             adminDto.setIsAdmin(true);
             adminDto.setTrustLevel(4);
+            adminDto.setPointsBalance(999999);
+            adminDto.setTotalPointsSpent(0);
+            adminDto.setLevelProfile(userLevelService.getLevelProfile(-1L));
             return ResponseEntity.ok(adminDto);
         }
         return userRepository.findById(userId)
-                .map(user -> ResponseEntity.ok(UserDTO.from(user)))
+                .map(user -> ResponseEntity.ok(userLevelService.toUserDTO(user)))
                 .orElse(ResponseEntity.status(401).build());
     }
 
