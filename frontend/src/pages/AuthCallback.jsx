@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { authApi } from '../services/api'
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams()
@@ -12,6 +13,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const token = searchParams.get('token')
+    const code = searchParams.get('code')
     const error = searchParams.get('error')
 
     if (token) {
@@ -21,6 +23,29 @@ export default function AuthCallback() {
       sessionStorage.removeItem('auth_redirect')
       const timer = setTimeout(() => navigate(redirect), 1200)
       return () => clearTimeout(timer)
+    }
+
+    if (code) {
+      let active = true
+      const redirectUri = `${window.location.origin}${window.location.pathname}`
+      authApi.exchangeCode(code, redirectUri)
+        .then((res) => {
+          if (!active) return
+          login(res.data.token)
+          setStatus('success')
+          const redirect = sessionStorage.getItem('auth_redirect') || '/'
+          sessionStorage.removeItem('auth_redirect')
+          setTimeout(() => navigate(redirect), 1200)
+        })
+        .catch((err) => {
+          if (!active) return
+          setStatus('error')
+          setErrorMsg(err.response?.data?.error || '登录授权失败，请稍后重试')
+          setTimeout(() => navigate('/'), 3000)
+        })
+      return () => {
+        active = false
+      }
     }
 
     if (error) {
@@ -38,7 +63,7 @@ export default function AuthCallback() {
     setErrorMsg('无效的回调参数')
     const timer = setTimeout(() => navigate('/'), 3000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [login, navigate, searchParams])
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">

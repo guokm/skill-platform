@@ -40,10 +40,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:-SkillAtlas-Super-Secret-Key-2026-Change-This-In-Production!}
       JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-72}
       # Linux.do OAuth2
-      LINUX_DO_CLIENT_ID: ${LINUX_DO_CLIENT_ID:-}
-      LINUX_DO_CLIENT_SECRET: ${LINUX_DO_CLIENT_SECRET:-}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://ai.5420486.xyz//api/auth/callback}
-      FRONTEND_URL: ${FRONTEND_URL:-http://ai.5420486.xyz/}
+      LINUX_DO_CLIENT_ID: ${LINUX_DO_CLIENT_ID:-7C2cUmHTgMEb028o0S1ia1bocG7chm7V}
+      LINUX_DO_CLIENT_SECRET: ${LINUX_DO_CLIENT_SECRET:-wU5UFgt9YPnw4IaHtorNcBS48aiOhdCJ}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://ai.5420486.xyz/api/auth/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://ai.5420486.xyz}
       # Admin
       ADMIN_USERNAME: ${ADMIN_USERNAME:-skillatlas}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Sk!llAtl@s#2026$}

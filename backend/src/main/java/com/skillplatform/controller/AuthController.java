@@ -54,6 +54,13 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("url", url, "state", state));
     }
 
+    @PostMapping("/exchange-code")
+    @Operation(summary = "前端回调页使用 code 换取平台 JWT")
+    public ResponseEntity<Map<String, String>> exchangeCode(@RequestBody ExchangeCodeRequest request) {
+        String token = authService.handleCallback(request.getCode(), request.getRedirectUri());
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
     /**
      * 2. Linux.do 回调，后端处理后重定向前端 /auth/callback?token=xxx
      */
@@ -65,13 +72,13 @@ public class AuthController {
 
         try {
             String jwt = authService.handleCallback(code);
-            String redirectUrl = frontendUrl + "/auth/callback?token=" + jwt;
+            String redirectUrl = authService.getFrontendCallbackUrl() + "?token=" + jwt;
             return ResponseEntity.status(302)
                     .location(URI.create(redirectUrl))
                     .build();
         } catch (Exception e) {
             log.error("OAuth2 callback failed: {}", e.getMessage());
-            String errorUrl = frontendUrl + "/auth/callback?error=" +
+            String errorUrl = authService.getFrontendCallbackUrl() + "?error=" +
                     java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
             return ResponseEntity.status(302).location(URI.create(errorUrl)).build();
         }
@@ -161,5 +168,11 @@ public class AuthController {
     public static class AdminLoginRequest {
         private String username;
         private String password;
+    }
+
+    @Data
+    public static class ExchangeCodeRequest {
+        private String code;
+        private String redirectUri;
     }
 }

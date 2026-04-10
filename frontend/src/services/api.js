@@ -53,6 +53,7 @@ export const categoriesApi = {
 // ── Auth ──────────────────────────────────────────────────────────────────
 export const authApi = {
   getLoginUrl: () => API.get('/auth/login-url'),
+  exchangeCode: (code, redirectUri) => API.post('/auth/exchange-code', { code, redirectUri }),
   me: (token) => axios.get('/api/auth/me', {
     headers: { Authorization: `Bearer ${token}` },
   }),

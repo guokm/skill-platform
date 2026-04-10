@@ -57,8 +57,8 @@ app:
       authorization-endpoint: https://connect.linux.do/oauth2/authorize
       token-endpoint: https://connect.linux.do/oauth2/token
       user-endpoint: https://connect.linux.do/api/user
-      redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8080/api/auth/callback}
-      frontend-url: ${FRONTEND_URL:http://localhost}
+      redirect-uri: ${OAUTH2_REDIRECT_URI:http://ai.5420486.xyz/api/auth/callback}
+      frontend-url: ${FRONTEND_URL:http://ai.5420486.xyz}
 
   # Admin config
   admin:

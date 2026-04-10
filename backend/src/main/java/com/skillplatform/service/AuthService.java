@@ -1,5 +1,6 @@
 package com.skillplatform.service;
 
+import com.skillplatform.exception.BusinessException;
 import com.skillplatform.model.User;
 import com.skillplatform.repository.PointTransactionRepository;
 import com.skillplatform.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -44,6 +46,9 @@ public class AuthService {
     @Value("${app.oauth2.linux-do.redirect-uri}")
     private String redirectUri;
 
+    @Value("${app.oauth2.linux-do.frontend-url:http://localhost}")
+    private String frontendUrl;
+
     @Value("${app.admin.min-trust-level:2}")
     private int minTrustLevel;
 
@@ -59,12 +64,15 @@ public class AuthService {
      * Build the Linux.do authorization URL
      */
     public String buildAuthorizationUrl(String state) {
-        return authorizationEndpoint
-                + "?client_id=" + clientId
-                + "&response_type=code"
-                + "&redirect_uri=" + encodeUrl(redirectUri)
-                + "&scope=read"
-                + "&state=" + state;
+        validateOAuthConfiguration();
+        return UriComponentsBuilder.fromUriString(normalizeUrl(authorizationEndpoint))
+                .queryParam("client_id", clientId.trim())
+                .queryParam("response_type", "code")
+                .queryParam("redirect_uri", resolveRedirectUri(null))
+                .queryParam("scope", "read")
+                .queryParam("state", Optional.ofNullable(state).orElse(""))
+                .build(true)
+                .toUriString();
     }
 
     /**
@@ -72,8 +80,14 @@ public class AuthService {
      */
     @Transactional
     public String handleCallback(String code) {
+        return handleCallback(code, null);
+    }
+
+    @Transactional
+    public String handleCallback(String code, String redirectUriOverride) {
+        validateOAuthConfiguration();
         // Step 1: Exchange code for access token
-        String accessToken = exchangeCodeForToken(code);
+        String accessToken = exchangeCodeForToken(code, resolveRedirectUri(redirectUriOverride));
 
         // Step 2: Fetch user info from Linux.do
         Map<String, Object> userInfo = fetchUserInfo(accessToken);
@@ -86,7 +100,7 @@ public class AuthService {
     }
 
     @SuppressWarnings("unchecked")
-    private String exchangeCodeForToken(String code) {
+    private String exchangeCodeForToken(String code, String resolvedRedirectUri) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(clientId, clientSecret);
@@ -94,7 +108,7 @@ public class AuthService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("code", code);
-        body.add("redirect_uri", redirectUri);
+        body.add("redirect_uri", resolvedRedirectUri);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -184,11 +198,48 @@ public class AuthService {
         return url;
     }
 
-    private String encodeUrl(String url) {
-        try {
-            return java.net.URLEncoder.encode(url, java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            return url;
+    private void validateOAuthConfiguration() {
+        if (clientId == null || clientId.isBlank()) {
+            throw new BusinessException(HttpStatus.SERVICE_UNAVAILABLE, "OAUTH_CLIENT_ID_MISSING", "Linux.do 登录未配置 client_id，请检查后端环境变量");
         }
+        if (clientSecret == null || clientSecret.isBlank()) {
+            throw new BusinessException(HttpStatus.SERVICE_UNAVAILABLE, "OAUTH_CLIENT_SECRET_MISSING", "Linux.do 登录未配置 client_secret，请检查后端环境变量");
+        }
+    }
+
+    private String resolveRedirectUri(String redirectUriOverride) {
+        if (redirectUriOverride != null && !redirectUriOverride.isBlank()) {
+            return normalizeUrl(redirectUriOverride);
+        }
+        return normalizeUrl(redirectUri);
+    }
+
+    public String getFrontendCallbackUrl() {
+        return trimTrailingSlash(frontendUrl) + "/auth/callback";
+    }
+
+    private String normalizeUrl(String url) {
+        if (url == null) {
+            return "";
+        }
+        String normalized = url.trim();
+        if (normalized.isBlank()) {
+            return normalized;
+        }
+        String placeholder = "__SCHEME__";
+        normalized = normalized.replace("://", placeholder);
+        normalized = normalized.replaceAll("/{2,}", "/");
+        return normalized.replace(placeholder, "://");
+    }
+
+    private String trimTrailingSlash(String url) {
+        if (url == null) {
+            return "";
+        }
+        String normalized = url.trim();
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 }
