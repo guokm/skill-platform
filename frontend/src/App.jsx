@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -24,11 +25,34 @@ function AdminRoute({ children }) {
   return children
 }
 
+function OAuthCallbackBridge() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  
+  useEffect(() => {
+    if (location.pathname === '/auth/callback') {
+      return
+    }
+    const searchParams = new URLSearchParams(location.search)
+    const hasOAuthParams = searchParams.has('code') || searchParams.has('token') || searchParams.has('error')
+    if (!hasOAuthParams) {
+      return
+    }
+    navigate({
+      pathname: '/auth/callback',
+      search: location.search,
+    }, { replace: true })
+  }, [location.pathname, location.search, navigate])
+
+  return null
+}
+
 export default function App() {
   return (
     <div className="app-shell">
       <Header />
       <main className="content-shell flex-1">
+        <OAuthCallbackBridge />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/skills" element={<Skills />} />
