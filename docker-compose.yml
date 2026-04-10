@@ -42,8 +42,8 @@ services:
       # Linux.do OAuth2
       LINUX_DO_CLIENT_ID: ${LINUX_DO_CLIENT_ID:-}
       LINUX_DO_CLIENT_SECRET: ${LINUX_DO_CLIENT_SECRET:-}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://localhost/api/auth/callback}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://ai.5420486.xyz//api/auth/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://ai.5420486.xyz/}
       # Admin
       ADMIN_USERNAME: ${ADMIN_USERNAME:-skillatlas}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Sk!llAtl@s#2026$}
